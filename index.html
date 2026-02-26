@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Management</title>
+<style>
+    body {
+        font-family: 'Poppins', sans-serif;
+        background: linear-gradient(to right, #6a11cb, #2575fc);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+    }
+    .container {
+        background: white;
+        padding: 30px 25px;
+        border-radius: 15px;
+        width: 420px;
+        box-shadow: 0 15px 25px rgba(0,0,0,0.2);
+        transition: transform 0.3s ease;
+    }
+    .container:hover {
+        transform: scale(1.02);
+    }
+    h2 {
+        text-align: center;
+        margin-bottom: 20px;
+        color: #6a11cb;
+    }
+    input {
+        width: 100%;
+        padding: 12px;
+        margin: 8px 0;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        outline: none;
+        transition: all 0.3s ease;
+    }
+    input:focus {
+        border-color: #6a11cb;
+        box-shadow: 0 0 5px rgba(106,17,203,0.5);
+    }
+    button {
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        margin: 8px 0;
+        font-weight: bold;
+        font-size: 16px;
+        transition: all 0.3s ease;
+    }
+    .btn:hover {
+        transform: scale(1.05);
+    }
+    .add-btn {
+        background-color: #28a745;
+        color: white;
+        width: 100%;
+    }
+    .add-btn:hover {
+        background-color: #218838;
+    }
+    .edit-btn {
+        background-color: #3498db;
+        color: white;
+        padding: 6px 12px;
+        margin-right: 5px;
+    }
+    .edit-btn:hover {
+        background-color: #2980b9;
+    }
+    .delete-btn {
+        background-color: #e74c3c;
+        color: white;
+        padding: 6px 12px;
+    }
+    .delete-btn:hover {
+        background-color: #c0392b;
+    }
+    #logout {
+        width: 100%;
+        background: #333;
+        color: white;
+        padding: 12px;
+        font-weight: bold;
+    }
+    #logout:hover {
+        background: #555;
+    }
+    table {
+        width: 100%;
+        margin-top: 15px;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+    th, td {
+        border-bottom: 1px solid #ccc;
+        padding: 8px;
+        text-align: left;
+    }
+    th {
+        background-color: #6a11cb;
+        color: white;
+    }
+    #app {
+        display: none;
+    }
+</style>
+</head>
+<body>
+
+<!-- LOGIN FORM -->
+<div class="container" id="login">
+    <h2>Login</h2>
+    <input type="text" id="loginName" placeholder="Your Name">
+    <input type="password" id="loginPassword" placeholder="Password">
+    <button class="btn add-btn" onclick="login()">Login</button>
+</div>
+
+<!-- STUDENT APP -->
+<div class="container" id="app">
+    <h2>Welcome <span id="userDisplay"></span></h2>
+    <p>Total Students: <span id="total">0</span></p>
+
+    <input type="text" id="nameInput" placeholder="Student Name">
+    <input type="text" id="emailInput" placeholder="Email">
+    <input type="text" id="courseInput" placeholder="Course">
+    <button class="btn add-btn" onclick="addStudent()">Add Student</button>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Course</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="studentTableBody"></tbody>
+    </table>
+
+    <button class="btn" id="logout" onclick="logout()">Logout</button>
+</div>
+
+<script>
+    // LOGIN CREDENTIALS
+    const credentials = { name: "Tuni", password: "tuni123" };
+    let students = [];
+
+    function login() {
+        const name = document.getElementById('loginName').value.trim();
+        const password = document.getElementById('loginPassword').value.trim();
+        if(name === credentials.name && password === credentials.password) {
+            document.getElementById('login').style.display = 'none';
+            document.getElementById('app').style.display = 'block';
+            document.getElementById('userDisplay').textContent = name;
+        } else {
+            alert("Invalid Name or Password!");
+        }
+    }
+
+    function logout() {
+        document.getElementById('login').style.display = 'block';
+        document.getElementById('app').style.display = 'none';
+        document.getElementById('loginName').value = '';
+        document.getElementById('loginPassword').value = '';
+    }
+
+    function generateID() {
+        return '_' + Math.random().toString(36).substr(2, 9);
+    }
+
+    function addStudent() {
+        const name = document.getElementById('nameInput').value.trim();
+        const email = document.getElementById('emailInput').value.trim();
+        const course = document.getElementById('courseInput').value.trim();
+        if(!name || !email || !course) { alert("Please fill all fields"); return; }
+
+        students.push({ id: generateID(), name, email, course });
+        renderStudents();
+        document.getElementById('nameInput').value = '';
+        document.getElementById('emailInput').value = '';
+        document.getElementById('courseInput').value = '';
+    }
+
+    function renderStudents() {
+        const tableBody = document.getElementById('studentTableBody');
+        tableBody.innerHTML = '';
+        students.forEach(student => {
+            tableBody.innerHTML += `
+            <tr>
+                <td>${student.name}</td>
+                <td>${student.email}</td>
+                <td>${student.course}</td>
+                <td>
+                    <button class="edit-btn" onclick="editStudent('${student.id}')">Edit</button>
+                    <button class="delete-btn" onclick="deleteStudent('${student.id}')">Delete</button>
+                </td>
+            </tr>`;
+        });
+        document.getElementById('total').textContent = students.length;
+    }
+
+    function editStudent(id) {
+        const student = students.find(s => s.id === id);
+        if(student) {
+            document.getElementById('nameInput').value = student.name;
+            document.getElementById('emailInput').value = student.email;
+            document.getElementById('courseInput').value = student.course;
+            students = students.filter(s => s.id !== id);
+            renderStudents();
+        }
+    }
+
+    function deleteStudent(id) {
+        students = students.filter(s => s.id !== id);
+        renderStudents();
+    }
+</script>
+
+</body>
+</html>
